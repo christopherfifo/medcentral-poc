@@ -2,52 +2,301 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>MedCentral - Prontuário</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedCentral - Prontuário Eletrônico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .box { border: 1px solid #ccc; padding: 15px; margin-top: 10px; background-color: #f9f9f9; }
-        .danger { color: red; font-weight: bold; }
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --danger-bg: #fef2f2;
+            --danger-text: #ef4444;
+            --danger-border: #f87171;
+            --success-bg: #ecfdf5;
+            --success-text: #10b981;
+            --success-border: #34d399;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #telaLogin {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .logo { color: var(--primary); font-size: 24px; font-weight: 700; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .logo span { font-size: 28px; }
+        
+        .login-subtitle { color: var(--text-light); font-size: 14px; margin-bottom: 30px; }
+
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .input-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: all 0.3s; font-family: 'Inter', sans-serif;}
+        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
+
+        .btn { width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; font-family: 'Inter', sans-serif;}
+        .btn:hover { background-color: var(--primary-dark); }
+
+        #telaSistema {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            margin: 20px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+        }
+
+        .user-badge { display: flex; align-items: center; gap: 10px; background: var(--success-bg); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--success-border); color: var(--success-text); font-weight: 600; font-size: 14px; }
+        .btn-logout { background: none; border: none; color: var(--text-light); font-weight: 600; cursor: pointer; text-decoration: underline; font-family: 'Inter', sans-serif;}
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border-color); }
+        .card h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;}
+
+        .control-panel { background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px;}
+        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; font-family: 'Inter', sans-serif; font-size: 14px;}
+        .url-bar { display: flex; background: white; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;}
+        .url-bar span { background: #e2e8f0; padding: 10px; color: var(--text-light); font-size: 13px; border-right: 1px solid var(--border-color);}
+        .url-bar input { border: none; padding: 10px; width: 60px; font-weight: bold; color: var(--primary); text-align: center; font-size: 14px;}
+        .url-bar input:focus { outline: none; }
+
+        .prontuario-vazio { text-align: center; color: var(--text-light); padding: 40px 0; }
+        .data-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .data-row:last-child { border-bottom: none; }
+        .data-label { font-weight: 600; color: var(--text-light); font-size: 13px; }
+        .data-value { font-weight: 600; color: var(--text-main); font-size: 14px; text-align: right; max-width: 70%;}
+
+        .alert { padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;}
+        .alert-danger { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+        .alert-success { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+        .vazamento-highlight { color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 4px; border: 1px dashed #ef4444; }
+
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h2>MedCentral - Sistema de Prontuário Eletrônico</h2>
-    <p>Bem-vindo, <strong>Paciente A</strong>.</p>
-    
-    <div>
-        <label for="consultaId">Acessar consulta (ID): </label>
-        <input type="number" id="consultaId" value="1">
-        <button onclick="buscarConsulta()">Visualizar Histórico</button>
+
+    <div id="telaLogin">
+        <div class="logo"><span>⚕️</span> MedCentral</div>
+        <div class="login-subtitle">Portal do Paciente</div>
+        
+        <div class="input-group">
+            <label for="loginUsuario">Usuário de Acesso</label>
+            <input type="text" id="loginUsuario" value="christopher" placeholder="Digite seu usuário">
+        </div>
+        
+        <div class="input-group">
+            <label for="senhaUsuario">Senha</label>
+            <input type="password" id="senhaUsuario" value="123" placeholder="••••••••">
+        </div>
+        
+        <button class="btn" onclick="fazerLogin()">Entrar de forma Segura</button>
+        <div id="erroLogin" style="margin-top: 15px;"></div>
     </div>
 
-    <div class="box" id="resultado">
-        <!-- Os dados da consulta aparecerão aqui -->
-    </div>
+    <div id="telaSistema">
+        
+        <header class="dashboard-header">
+            <div class="logo"><span>⚕️</span> MedCentral</div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="user-badge">
+                    <span>🟢</span> <span id="boasVindas">Logado</span>
+                </div>
+                <button class="btn-logout" onclick="location.reload()">Sair do Sistema</button>
+            </div>
+        </header>
 
-    <script>
-        async function buscarConsulta() {
-            const id = document.getElementById('consultaId').value;
-            const resultadoDiv = document.getElementById('resultado');
-            
-            try {
-                // Requisição para a rota HTTP conforme descrito na arquitetura
-                const response = await fetch(`http://localhost:3000/api/consultas/${id}`);
+        <div class="grid-container">
+            <div class="card">
+                <h3>⚙️ Painel de Teste (Fórum)</h3>
                 
-                if (response.ok) {
-                    const dados = await response.json();
-                    resultadoDiv.innerHTML = `
-                        <p><strong>Nome:</strong> <span class="${dados.id !== 1 ? 'danger' : ''}">${dados.nome}</span></p>
-                        <p><strong>Data:</strong> ${dados.data}</p>
-                        <p><strong>Exame:</strong> ${dados.exame}</p>
-                        <p><strong>Receita:</strong> ${dados.receita}</p>
-                        ${dados.id !== 1 ? '<p class="danger">ALERTA: Você acessou dados de outro paciente!</p>' : ''}
+                <div class="control-panel">
+                    <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">1. Controle de Acesso da API</label>
+                    <select id="modoSeguranca">
+                        <option value="vulneravel">🔴 Desativado (Vulnerável a IDOR)</option>
+                        <option value="seguro">🟢 Ativado (Protegido)</option>
+                    </select>
+
+                    <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">2. Interceptar Requisição HTTP</label>
+                    <div class="url-bar">
+                        <span>GET /api/consultas/</span>
+                        <input type="number" id="consultaId" value="1">
+                    </div>
+                </div>
+
+                <button class="btn" onclick="buscarProntuario()">Disparar Requisição</button>
+            </div>
+
+            <div class="card">
+                <h3>📄 Prontuário Eletrônico</h3>
+                
+                <div id="resultado">
+                    <div class="prontuario-vazio">
+                        <span style="font-size: 40px; display: block; margin-bottom: 10px;">🔍</span>
+                        Selecione o ID da consulta e dispare a requisição para visualizar os dados médicos.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    let sessaoAtual = null;
+
+    async function fazerLogin() {
+        const login = document.getElementById('loginUsuario').value;
+        const senha = document.getElementById('senhaUsuario').value;
+        const divErro = document.getElementById('erroLogin');
+        const btn = document.querySelector('.btn');
+        
+        btn.innerText = "Autenticando...";
+
+        try {
+            const response = await fetch('http://localhost:3000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, senha })
+            });
+
+            const dados = await response.json();
+
+            if (response.ok) {
+                sessaoAtual = dados;
+                document.getElementById('telaLogin').style.display = 'none';
+                document.getElementById('telaSistema').style.display = 'block';
+                document.getElementById('boasVindas').innerText = dados.nome;
+                
+                document.body.style.alignItems = 'flex-start';
+                document.body.style.paddingTop = '40px';
+            } else {
+                divErro.innerHTML = `<div class="alert alert-danger" style="justify-content: center;">❌ ${dados.erro}</div>`;
+                btn.innerText = "Entrar de forma Segura";
+            }
+        } catch (error) {
+            divErro.innerHTML = `<div class="alert alert-danger" style="justify-content: center;">❌ Servidor offline. Inicie o server.js.</div>`;
+            btn.innerText = "Entrar de forma Segura";
+        }
+    }
+
+    async function buscarProntuario() {
+        const idProntuario = document.getElementById('consultaId').value;
+        const modoSeguranca = document.getElementById('modoSeguranca').value;
+        const resultadoDiv = document.getElementById('resultado');
+        
+        resultadoDiv.innerHTML = '<div class="prontuario-vazio">Carregando dados do servidor...</div>';
+
+        try {
+            const url = `http://localhost:3000/api/${modoSeguranca}/consultas/${idProntuario}`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'usuario-logado-id': sessaoAtual.usuarioId
+                }
+            });
+            
+            const dados = await response.json();
+
+            if (response.ok) {
+                const vazouDados = dados.pacienteId !== sessaoAtual.usuarioId;
+                const classeVazamento = vazouDados ? 'vazamento-highlight' : '';
+                
+                let htmlResultado = `
+                    <div style="background: #f8fafc; padding: 10px 15px; border-radius: 8px; border-left: 4px solid var(--primary); margin-bottom: 20px;">
+                        <strong style="color: var(--primary);">Status 200 OK</strong> - Requisição Processada
+                    </div>
+
+                    <div class="data-row">
+                        <span class="data-label">Paciente</span>
+                        <span class="data-value ${classeVazamento}">${dados.nome}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Data da Consulta</span>
+                        <span class="data-value">${dados.data}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Exame Realizado</span>
+                        <span class="data-value">${dados.exame}</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Prescrição Médica</span>
+                        <span class="data-value">${dados.receita}</span>
+                    </div>
+                `;
+
+                if (vazouDados) {
+                    htmlResultado += `
+                        <div class="alert alert-danger">
+                            ⚠️ <strong>VULNERABILIDADE EXPLORADA:</strong> Broken Access Control (IDOR) executado com sucesso. Dados sigilosos vazados!
+                        </div>
                     `;
                 } else {
-                    resultadoDiv.innerHTML = `<p>Consulta não encontrada.</p>`;
+                    htmlResultado += `
+                        <div class="alert alert-success">
+                            ✅ <strong>Acesso Legítimo:</strong> Estes são os seus próprios dados médicos.
+                        </div>
+                    `;
                 }
-            } catch (error) {
-                resultadoDiv.innerHTML = `<p>Erro ao conectar com a API.</p>`;
+
+                resultadoDiv.innerHTML = htmlResultado;
+
+            } else {
+                resultadoDiv.innerHTML = `
+                    <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid var(--danger-text); margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: var(--danger-text);">🛑 Status ${response.status} Forbidden</h4>
+                        <p style="margin: 0; font-size: 14px;"><strong>Servidor Respondeu:</strong> ${dados.erro}</p>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        🛡️ <strong>DEFESA ATIVA:</strong> O sistema validou a sessão e bloqueou a tentativa de escalar privilégios horizontais (IDOR barrado).
+                    </div>
+                `;
             }
+        } catch (error) {
+            resultadoDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    ❌ Erro de conexão com a API. Verifique se o servidor Node.js está rodando.
+                </div>
+            `;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>

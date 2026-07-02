@@ -3,14 +3,20 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-app.use(cors()); 
+app.use(cors());
+app.use(express.json()); 
+const usuarios = [
+    { id: 101, login: "christopher", senha: "123", nome: "Paciente A (Christopher)" },
+    { id: 102, login: "alvo", senha: "123", nome: "Paciente B (Alvo)" }
+];
+
 const consultasMedicas = [
     { 
         id: 1, 
         pacienteId: 101, 
-        nome: "Paciente A (Você)", 
+        nome: "Paciente A (Christopher)", 
         data: "2023-10-15", 
-        exame: "Hemograma", 
+        exame: "Hemograma Completo", 
         receita: "Vitamina C e Repouso" 
     },
     { 
@@ -18,29 +24,37 @@ const consultasMedicas = [
         pacienteId: 102, 
         nome: "Paciente B (Alvo)", 
         data: "2023-10-16", 
-        exame: "Raio-X Tórax", 
-        receita: "Tratamento para pneumonia" 
+        exame: "Raio-X Tórax e Tomografia", 
+        receita: "Antibiótico forte" 
     }
 ];
 
-app.get('/api/consultas/:id', (req, res) => {
-    const consultaId = parseInt(req.params.id);
+// ROTA DE LOGIN
+app.post('/api/login', (req, res) => {
+    const { login, senha } = req.body;
     
-    const consulta = consultasMedicas.find(c => c.id === consultaId);
-
-    if (consulta) {
-        res.json(consulta);
+    const usuario = usuarios.find(u => u.login === login && u.senha === senha);
+    
+    if (usuario) {
+        res.json({ sucesso: true, usuarioId: usuario.id, nome: usuario.nome });
     } else {
-        res.status(404).json({ erro: "Consulta não encontrada" });
+        res.status(401).json({ erro: "Usuário ou senha incorretos." });
     }
 });
 
-/*// Rota PROTEGIDA contra IDOR
-app.get('/api/consultas/:id', (req, res) => {
+// ROTA VULNERÁVEL (Ataque IDOR)
+app.get('/api/vulneravel/consultas/:id', (req, res) => {
     const consultaId = parseInt(req.params.id);
-    
+    const consulta = consultasMedicas.find(c => c.id === consultaId);
 
-    const usuarioLogadoId = 101; 
+    if (consulta) return res.json(consulta);
+    res.status(404).json({ erro: "Consulta não encontrada" });
+});
+
+// ROTA SEGURA (Defesa)
+app.get('/api/seguro/consultas/:id', (req, res) => {
+    const consultaId = parseInt(req.params.id);
+    const usuarioLogadoId = parseInt(req.headers['usuario-logado-id']); 
     
     const consulta = consultasMedicas.find(c => c.id === consultaId);
 
@@ -49,12 +63,12 @@ app.get('/api/consultas/:id', (req, res) => {
     }
 
     if (consulta.pacienteId !== usuarioLogadoId) {
-        return res.status(403).json({ erro: "Acesso Negado: Você não tem permissão para visualizar este prontuário." });
+        return res.status(403).json({ erro: "Acesso Negado: Registro pertence a outro paciente." });
     }
 
     res.json(consulta);
-}); */
+});
 
 app.listen(port, () => {
-    console.log(`MedCentral API rodando em http://localhost:${port}`);
+    console.log(`🚀 MedCentral API rodando em http://localhost:${port}`);
 });
