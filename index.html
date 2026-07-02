@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>MedCentral - Prontuário</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .box { border: 1px solid #ccc; padding: 15px; margin-top: 10px; background-color: #f9f9f9; }
+        .danger { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>MedCentral - Sistema de Prontuário Eletrônico</h2>
+    <p>Bem-vindo, <strong>Paciente A</strong>.</p>
+    
+    <div>
+        <label for="consultaId">Acessar consulta (ID): </label>
+        <input type="number" id="consultaId" value="1">
+        <button onclick="buscarConsulta()">Visualizar Histórico</button>
+    </div>
+
+    <div class="box" id="resultado">
+        <!-- Os dados da consulta aparecerão aqui -->
+    </div>
+
+    <script>
+        async function buscarConsulta() {
+            const id = document.getElementById('consultaId').value;
+            const resultadoDiv = document.getElementById('resultado');
+            
+            try {
+                // Requisição para a rota HTTP conforme descrito na arquitetura
+                const response = await fetch(`http://localhost:3000/api/consultas/${id}`);
+                
+                if (response.ok) {
+                    const dados = await response.json();
+                    resultadoDiv.innerHTML = `
+                        <p><strong>Nome:</strong> <span class="${dados.id !== 1 ? 'danger' : ''}">${dados.nome}</span></p>
+                        <p><strong>Data:</strong> ${dados.data}</p>
+                        <p><strong>Exame:</strong> ${dados.exame}</p>
+                        <p><strong>Receita:</strong> ${dados.receita}</p>
+                        ${dados.id !== 1 ? '<p class="danger">ALERTA: Você acessou dados de outro paciente!</p>' : ''}
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `<p>Consulta não encontrada.</p>`;
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `<p>Erro ao conectar com a API.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
